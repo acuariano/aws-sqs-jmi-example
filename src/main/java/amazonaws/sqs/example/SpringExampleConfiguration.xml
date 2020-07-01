@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+    ">
+    
+    <bean id="CredentialsProviderBean" class="com.amazonaws.auth.DefaultAWSCredentialsProviderChain"/>
+    
+    <bean id="ClientBuilder" class="com.amazonaws.services.sqs.AmazonSQSClientBuilder" factory-method="standard">
+        <property name="region" value="us-east-1"/>
+        <property name="credentials" ref="CredentialsProviderBean"/>               
+    </bean>
+    
+    <bean id="ProviderConfiguration" class="com.amazon.sqs.javamessaging.ProviderConfiguration">
+        <property name="numberOfMessagesToPrefetch" value="5"/>
+    </bean>
+    
+    <bean id="ConnectionFactory" class="com.amazon.sqs.javamessaging.SQSConnectionFactory">
+        <constructor-arg ref="ProviderConfiguration" />
+        <constructor-arg ref="ClientBuilder" />
+    </bean>
+    
+    <bean id="Connection" class="javax.jms.Connection"
+        factory-bean="ConnectionFactory"
+        factory-method="createConnection"
+        init-method="start"
+        destroy-method="close" />
+    
+    <bean id="QueueName" class="java.lang.String">
+        <constructor-arg value="SQSJMSClientExampleQueue"/>
+    </bean>
+</beans>
